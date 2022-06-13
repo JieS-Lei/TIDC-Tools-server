@@ -33,5 +33,16 @@ router.get('/TIDC/about', function (req, res) {
         })
     })
 })
+const _u = 'https://e8b1-117-188-63-221.jp.ngrok.io'
+router.get('/url_proxy', function (req, res) {
+    let keyword = req.query['keyword']
+    if (keyword === 'apply') {
+        res.redirect(301, _u + '/apply')
+    } else if (keyword === 'DonwloadExcel') {
+        res.redirect(301, _u + '/personnel.html')
+    } else {
+        res.send('访问错误！')
+    }
+})
 
 module.exports = router;

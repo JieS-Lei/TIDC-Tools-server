@@ -191,7 +191,6 @@ class Utils {
     jwt2Redis(token) {
         return new Promise((resolve, reject) => {
             this.verifyToken(token).then(obj => {
-                console.log(obj)
                 client.get(obj.sid).then(d => resolve({
                     data: d,
                     sid: obj.sid

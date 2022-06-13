@@ -57,7 +57,7 @@ const getTimeFn = () => {
 /* GET users listing. */
 // 登录接口
 router.post('/login', function (req, res) {
-    let code = req.body.code
+    let {code, image} = req.body
 
     if (!code) return res.send({
         code: 2,
@@ -104,7 +104,9 @@ router.post('/login', function (req, res) {
             .then(async d => {
                 let sid = utils.randomStr(redisKeyLength)
                 let token = utils.addToken({sid}, tokenOrRedisTime)
-                userList.updateOne({openid: opID}, {token: sid}).then()
+                let updateOption = {token: sid}
+                if (image) updateOption['image'] = image
+                userList.updateOne({openid: opID}, updateOption).exec()
                 let option = {
                     updataTime: getTimeFn()
                 }
@@ -157,6 +159,7 @@ router.post('/login', function (req, res) {
                             ...option
                         }))
                     })
+                    if (image) user.updateOne({_id: d._id}, {image}).exec()
                 }
             })
             .catch(e => {
@@ -179,7 +182,6 @@ router.post('/login', function (req, res) {
 // 验证token接口
 router.post('/token', async function (req, res) {
     let token = req.body.token
-    console.log(token)
     if (!token) {
         return res.send({
             code: 2,
@@ -211,7 +213,6 @@ router.post('/token', async function (req, res) {
     }
 
     let _time = token.exp - parseInt(Date.now() / 1000)
-    console.log('sid',token.sid)
     client.get(token.sid).then(async d => {
         if (typeof d !== 'string' || !d) {
             return res.send({

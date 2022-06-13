@@ -15,21 +15,21 @@ const getDateFn = function getDateFn() {
 * @param ObjectId _id 用户的id，String op 获取时长及次数 取值{默认: 返回一周的数据，'month': 返回一个月的数据，'day': 返回一天的数据}
 * @return 时长及次数数据 {'time': Number, 'frequency': Number}
 * */
-const getDuration = function weekDuration(_id, op) {
+const getDuration = function getDuration(_id, op) {
     return new Promise((resolve, reject) => {
-        let data
+        let date
         if (op === 'month') {
-            data = new Date().getDate()
+            date = new Date().getDate()
         } else if (op === 'day') {
-            data = 1
+            date = 1
         } else {
-            data = new Date().getDay()
-            if (!data) data = 7
+            date = new Date().getDay()
+            if (!date) date = 7
 
         }
-        data -= 1
-        let minLimitTime = new Date(getDateFn()).getTime() - (data * 24 * 60 * 60 * 1000)
-        let maxLimitTime = new Date().getTime()
+        date -= 1
+        let minLimitTime = new Date(getDateFn()).getTime() - (date * 24 * 60 * 60 * 1000),
+            maxLimitTime = new Date().getTime()
         clockList.find({
             clockID: _id,
             sCode: 1,
