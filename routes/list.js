@@ -183,8 +183,8 @@ router.post('/clock', (req, res) => {
         })
     })
 })
-router.post('/monthTop', (req, res) => {
-    let token = req.body['token']
+router.post('/ranking', (req, res) => {
+    let {token, date = 'week'} = req.body
     if (!token) return res.send({
         code: 2,
         msg: 'token is null'
@@ -223,8 +223,12 @@ router.post('/monthTop', (req, res) => {
                 })
         }).then()
 
-        let minLimitTime = new Date(getDateFn()).getTime() - (new Date().getDate() - 1) * 24 * 60 * 60 * 1000,
+        let minLimitTime = new Date(getDateFn()).getTime(),
             maxLimitTime = new Date().getTime()
+        let x = date === 'week' ? new Date().getDay() : new Date().getDate()
+        if (!x) x = 7
+        minLimitTime -= --x * 24 * 60 * 60 * 1000
+
         clockList.find(
             {sCode: 1, reqDate: {$gte: minLimitTime, $lt: maxLimitTime}},
             {clockID: 1, duration: 1, _id: 0},
@@ -310,7 +314,7 @@ router.post('/monthTop', (req, res) => {
                         else rear = i
                         m = Math.floor((rear - front) / 2)
                         i = front + m
-                    } while (m > 0)
+                    } while (true)
                 }
             }
             clockList.populate(newResult, [{

@@ -178,7 +178,7 @@ router.post('/login', function (req, res) {
             errMsg: e
         })
     })
-});
+})
 // 验证token接口
 router.post('/token', async function (req, res) {
     let token = req.body.token
@@ -442,8 +442,8 @@ router.post('/join', function (req, res) {
 })
 // 通过申请接口
 router.post('/pass', function (req, res) {
-    let {token, _id} = req.body
-    if (!token || !_id) return res.send({
+    let {token, _id, ifPass} = req.body
+    if (!token || !_id || !ifPass) return res.send({
         code: 2,
         msg: "missing required arguments"
     })
@@ -481,24 +481,49 @@ router.post('/pass', function (req, res) {
                     msg: '已是正式成员'
                 })
             }
-            let {openid, image, studentID, name, phone, sex, studentClass, reqDate} = uObj
-            user.create({
-                openid, image, studentID, name, phone, sex, studentClass, reqDate
-            }).then(() => {
-                res.send({
-                    code: 0,
-                    msg: 'ok'
+            if (ifPass === 'fail') {
+                userList.findByIdAndDelete(_id).exec((error, result) => {
+                    if (error) {
+                        console.error(error)
+                        return res.send({
+                            code: 4,
+                            msg: 'server error'
+                        })
+                    }
+                    if (!result) {
+                        console.log('Failed to delete user from userList: userID -', _id)
+                        return res.send({
+                            code: 1,
+                            msg: '删除失败，未知错误！'
+                        })
+                    }
+                    res.send({
+                        code: 0,
+                        msg: 'ok'
+                    })
+                    if (uObj['token']) client.del(uObj['token']).then()
                 })
-                userList.updateOne({_id}, {state: true, token: null}).then(obj => {
-                    if (!obj.matchedCount) console.log('state状态修改失败，_id：' + _id)
-                }).catch(e => console.error(e))
-                client.del(uObj['token']).then()
-            }).catch(e => {
-                console.error(e)
-                res.send({
-                    code: 4, msg: 'server error'
+            } else {
+                let {openid, image, studentID, name, phone, sex, studentClass, reqDate} = uObj
+                user.create({
+                    openid, image, studentID, name, phone, sex, studentClass, reqDate
+                }).then(() => {
+                    res.send({
+                        code: 0,
+                        msg: 'ok'
+                    })
+                    userList.updateOne({_id}, {state: true, token: null}).then(obj => {
+                        if (!obj.matchedCount) console.log('state状态修改失败，_id：' + _id)
+                    }).catch(e => console.error(e))
+                    if (uObj['token']) client.del(uObj['token']).then()
+                }).catch(e => {
+                    console.error(e)
+                    res.send({
+                        code: 4,
+                        msg: 'server error'
+                    })
                 })
-            })
+            }
         }).catch(e => {
             console.error(e)
             res.send({
